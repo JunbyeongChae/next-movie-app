@@ -23,7 +23,7 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 | Step 1 | layout.tsx · Providers · Header 구성, TypeScript 타입 정의, TMDB 유틸 함수 작성 |
 | Step 2 | MovieCard · MovieList 구현, loading.tsx Skeleton 처리, next.config.ts 이미지 호스트 설정 |
 | Step 3 | GenreFilter 구현, `useState`로 클라이언트 UI 상태 관리, `Promise.all` 동시 요청 |
-| Step 4 | Zustand로 즐겨찾기 상태 관리 |
+| Step 4 | 동적 라우팅(`[id]`), `generateMetadata`로 동적 메타데이터, 상세 페이지 구현 |
 | Step 5 | 로그인 폼 (Zod + React Hook Form) |
 
 ---
@@ -82,7 +82,11 @@ src/
 │   ├── layout.tsx        # 공통 레이아웃 (서버 컴포넌트)
 │   ├── page.tsx          # 홈 페이지 (/)
 │   ├── loading.tsx       # 홈 로딩 Skeleton
-│   └── globals.css
+│   ├── globals.css
+│   └── movies/
+│       └── [id]/
+│           ├── page.tsx      # 상세 페이지 + generateMetadata
+│           └── loading.tsx   # 상세 페이지 로딩 Skeleton
 ├── components/
 │   ├── Header.tsx        # 네비게이션 (클라이언트 컴포넌트)
 │   ├── Providers.tsx     # QueryClientProvider 래퍼 (클라이언트 컴포넌트)
