@@ -24,7 +24,7 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 | Step 2 | MovieCard · MovieList 구현, loading.tsx Skeleton 처리, next.config.ts 이미지 호스트 설정 |
 | Step 3 | GenreFilter 구현, `useState`로 클라이언트 UI 상태 관리, `Promise.all` 동시 요청 |
 | Step 4 | 동적 라우팅(`[id]`), `generateMetadata`로 동적 메타데이터, 상세 페이지 구현 |
-| Step 5 | 로그인 폼 (Zod + React Hook Form) |
+| Step 5 | Zustand store 구현, 즐겨찾기 추가·제거, 즐겨찾기 페이지 |
 
 ---
 
@@ -83,16 +83,20 @@ src/
 │   ├── page.tsx          # 홈 페이지 (/)
 │   ├── loading.tsx       # 홈 로딩 Skeleton
 │   ├── globals.css
-│   └── movies/
-│       └── [id]/
-│           ├── page.tsx      # 상세 페이지 + generateMetadata
-│           └── loading.tsx   # 상세 페이지 로딩 Skeleton
+│   ├── movies/
+│   │   └── [id]/
+│   │       ├── page.tsx      # 상세 페이지 + generateMetadata
+│   │       └── loading.tsx   # 상세 페이지 로딩 Skeleton
+│   └── favorites/
+│       └── page.tsx          # 즐겨찾기 페이지
 ├── components/
 │   ├── Header.tsx        # 네비게이션 (클라이언트 컴포넌트)
 │   ├── Providers.tsx     # QueryClientProvider 래퍼 (클라이언트 컴포넌트)
 │   ├── MovieCard.tsx     # 영화 카드 UI (서버 컴포넌트)
 │   ├── MovieList.tsx     # 카드 그리드 목록
 │   ├── GenreFilter.tsx   # 장르 필터 UI + 선택 상태 관리 (클라이언트 컴포넌트)
+│   ├── FavoriteButton.tsx # 즐겨찾기 버튼 (클라이언트 컴포넌트)
+│   ├── FavoritesList.tsx  # 즐겨찾기 목록 (클라이언트 컴포넌트)
 │   └── ui/               # shadcn/ui 컴포넌트
 │       ├── badge.tsx
 │       ├── button.tsx
@@ -102,6 +106,8 @@ src/
 ├── lib/
 │   ├── tmdb.ts           # TMDB API 호출 함수 모음
 │   └── utils.ts          # 유틸리티 함수 (cn 등)
+├── store/
+│   └── favoriteStore.ts  # 즐겨찾기 Zustand store
 └── types/
     └── movie.types.ts    # Movie, MovieDetail, Genre 타입 정의
 ```

@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { fetchMovie, getPosterUrl } from '@/lib/tmdb';
+import FavoriteButton from '@/components/FavoriteButton';
 
 interface MovieDetailPageProps {
   params: Promise<{ id: string }>;
@@ -52,6 +53,7 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
         </div>
 
         <p className="text-muted-foreground leading-relaxed">{movie.overview}</p>
+        <FavoriteButton movie={movie} />
       </div>
     </div>
   );
