@@ -1,20 +1,36 @@
-## Step 1 — layout.tsx + Providers + Header `(20분)`
+# Step 1 — layout.tsx + Providers + Header
 
-### 이 단계에서 만드는 것
+> 예상 소요 시간: 20분
+
+---
+
+## 이 단계에서 만드는 것
 
 앱 전체에서 공통으로 필요한 뼈대를 구성합니다.
+
+| 파일 | 역할 |
+|---|---|
+| `src/app/layout.tsx` | 앱 공통 레이아웃 (서버 컴포넌트) |
+| `src/components/Providers.tsx` | QueryClientProvider 래퍼 (`'use client'`) |
+| `src/components/Header.tsx` | 네비게이션 (`'use client'`) |
+| `src/types/movie.types.ts` | Movie, Genre TypeScript 타입 |
+| `src/lib/tmdb.ts` | TMDB API 호출 함수 모음 |
+
+---
+
+## 1. layout.tsx — 앱 공통 레이아웃
 
 이 단계의 핵심은 `src/app/layout.tsx`입니다.
 `create-next-app`이 자동 생성한 파일이지만, 우리 앱에 맞게 내용을 교체합니다.
 
-**layout.tsx가 특별한 이유**
+### layout.tsx가 특별한 이유
 
 Next.js는 `layout.tsx`라는 **파일명 자체**를 규약으로 인식합니다.
 별도 설정 없이, 이 파일은 해당 경로와 모든 하위 페이지에 자동으로 감싸집니다.
 `/`, `/search`, `/movies/1` 어느 경로로 접속해도 `layout.tsx`가 먼저 렌더링되고
 그 안의 `{children}` 자리에 해당 경로의 `page.tsx`가 삽입됩니다.
 
-**함수 이름은 중요하지 않습니다**
+### 함수 이름은 중요하지 않습니다
 
 Next.js는 파일명으로만 역할을 결정합니다. `default export`만 되어 있으면 함수 이름은 무엇이든 상관없습니다.
 `RootLayout`이라는 이름은 코드를 읽는 사람을 위한 관례일 뿐입니다.
@@ -26,7 +42,7 @@ export default function Banana({ children }) { ... }
 export default function ({ children }) { ... }
 ```
 
-**layout.tsx 전체 코드**
+### 전체 코드
 
 기존 내용을 모두 지우고 아래 코드로 교체합니다.
 
@@ -75,11 +91,11 @@ export default function RootLayout({
 
 ---
 
-### 1. Providers.tsx — QueryClientProvider 설정
+## 2. Providers.tsx — QueryClientProvider 설정
 
 **`src/components/Providers.tsx` 파일을 새로 생성합니다.**
 
-**왜 별도 파일로 분리하는가?**
+### 왜 별도 파일로 분리하는가?
 
 `QueryClientProvider`는 TanStack Query의 캐시와 설정을 하위 컴포넌트 전체에 제공하는 역할을 합니다.
 
@@ -89,7 +105,7 @@ export default function RootLayout({
 
 이 때문에 `QueryClientProvider`를 `layout.tsx`에 직접 넣을 수 없고, `'use client'`를 선언한 별도 파일로 분리한 뒤 `layout.tsx`에서 import해서 사용합니다.
 
-**잘못된 방법 vs 올바른 방법**
+### 잘못된 방법 vs 올바른 방법
 
 ```tsx
 // ❌ 잘못된 방법 — 모듈 최상단에 선언
@@ -111,7 +127,9 @@ export default function Providers({ children }) {
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }
 ```
----
+
+### 전체 코드
+
 ```tsx
 // src/components/Providers.tsx
 
@@ -129,7 +147,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 1000 * 60 * 5,   // 5분간 캐시 유지 — 같은 데이터를 5분 안에 다시 요청하면 서버 호출 없이 캐시를 반환합니다.
+        staleTime: 1000 * 60 * 5, // 5분간 캐시 유지 — 같은 데이터를 5분 안에 다시 요청하면 서버 호출 없이 캐시를 반환합니다.
       },
     },
   }))
@@ -145,22 +163,22 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 }
 ```
 
-**layout.tsx와의 연결 관계**
+### layout.tsx와의 연결 관계
 
 `Providers`는 단독으로 동작하지 않습니다. `layout.tsx`가 이 컴포넌트를 import해서 `<Providers>`로 전체를 감싸는 순간 연결됩니다.
 
 ```
 layout.tsx (서버 컴포넌트)
-└── <Providers>              ← QueryClientProvider가 내부에 있음 (클라이언트 컴포넌트)
-    ├── <Header />           ← TanStack Query 사용 가능
-    └── <main>{children}</main>  ← 모든 페이지에서 TanStack Query 사용 가능
+└── <Providers>                   ← QueryClientProvider가 내부에 있음 (클라이언트 컴포넌트)
+    ├── <Header />                ← TanStack Query 사용 가능
+    └── <main>{children}</main>   ← 모든 페이지에서 TanStack Query 사용 가능
 ```
 
 `layout.tsx`가 모든 페이지에 자동 적용되므로, `Providers`로 한 번 감싸는 것만으로 앱 전체에서 TanStack Query를 사용할 수 있게 됩니다.
 
 ---
 
-### 2. Header.tsx — 네비게이션
+## 3. Header.tsx — 네비게이션
 
 **`src/components/Header.tsx` 파일을 새로 생성합니다.**
 
@@ -207,8 +225,6 @@ export default function Header() {
 - HTML `<a>` 대신 `<Link>` (next/link) — 페이지 전체를 새로 불러오지 않고 필요한 부분만 교체합니다.
 - `usePathname` — 현재 URL 경로를 읽는 Next.js 훅입니다. active 링크 스타일 처리에 사용합니다.
 
----
-
 ### 브라우저 확인
 
 `Providers`와 `Header`를 모두 만들었으므로 `layout.tsx`가 오류 없이 동작합니다.
@@ -221,7 +237,7 @@ npm run dev
 
 ---
 
-### 3. TypeScript 타입 정의
+## 4. TypeScript 타입 정의
 
 **`src/types/movie.types.ts` 파일을 새로 생성합니다.**
 
@@ -258,11 +274,12 @@ export interface Genre {
 
 ---
 
-### 4. TMDB 유틸리티 함수
+## 5. TMDB 유틸리티 함수
 
 **`src/lib/tmdb.ts` 파일을 새로 생성합니다.**
 
 TMDB API 호출 함수를 한 곳에 모아둡니다. 다음 단계에서 페이지를 만들 때 import해서 사용합니다.
+
 ```ts
 // src/lib/tmdb.ts
 import { Movie, MovieDetail, Genre } from '../types/movie.types'
@@ -280,12 +297,6 @@ const API_KEY = process.env.TMDB_API_KEY
 
 // 모든 TMDB 요청의 공통 로직을 담은 내부 함수입니다. export하지 않으므로 이 파일 안에서만 사용합니다.
 //
-// async
-//   → 이 함수 안에서 await를 사용할 수 있습니다. 네트워크 요청처럼 시간이 걸리는 작업을 기다립니다.
-//
-// function tmdbFetch
-//   → 함수 이름입니다. export가 없으므로 이 파일 내부에서만 호출할 수 있습니다.
-//
 // <T>
 //   → 제네릭(Generic)입니다. 응답 데이터의 타입을 호출하는 쪽에서 직접 지정합니다.
 //     예) tmdbFetch<{ results: Movie[] }>(...) → T가 { results: Movie[] }로 결정됩니다.
@@ -297,20 +308,14 @@ const API_KEY = process.env.TMDB_API_KEY
 // params = ''
 //   → 추가 쿼리 파라미터입니다. 기본값이 빈 문자열이므로 넘기지 않아도 됩니다.
 //     검색 시에만 '&query=어벤저스' 형태로 넘깁니다.
-//
-// : Promise<T>
-//   → 반환 타입입니다. async 함수는 항상 Promise를 반환합니다.
-//     Promise가 완료되면 T 타입의 값을 돌려줍니다.
 async function tmdbFetch<T>(endpoint: string, params = ''): Promise<T> {
   const res = await fetch(
-    // BASE_URL + endpoint    : 요청할 API 경로
-    // api_key=${API_KEY}     : 인증 키
-    // language=ko-KR         : 한국어 응답 요청
-    // params                 : 검색어 등 추가 파라미터 (기본값 빈 문자열)
     `${BASE_URL}${endpoint}?api_key=${API_KEY}&language=ko-KR${params}`,
-    { next: { revalidate: 3600 } }  // 1시간마다 데이터 갱신
+    // { next: { revalidate: 3600 } } 는 Next.js의 캐싱 옵션입니다.
+    // 같은 요청을 1시간 동안 재사용합니다. 매번 TMDB에 요청하지 않아도 됩니다.
+    { next: { revalidate: 3600 } }
   )
-  if (!res.ok) throw new Error(`TMDB 요청 실패:${endpoint}`)
+  if (!res.ok) throw new Error(`TMDB 요청 실패: ${endpoint}`)
   return res.json()
 }
 
@@ -331,7 +336,7 @@ export async function fetchMovie(id: string) {
 export async function searchMovies(query: string) {
   const data = await tmdbFetch<{ results: Movie[] }>(
     '/search/movie',
-    `&query=${encodeURIComponent(query)}`  // 한글 등 특수문자를 URL 안전 형식으로 변환합니다.
+    `&query=${encodeURIComponent(query)}` // 한글 등 특수문자를 URL 안전 형식으로 변환합니다.
   )
   return data.results
 }
@@ -349,17 +354,16 @@ export function getPosterUrl(posterPath: string | null, size = 'w500') {
   return `https://image.tmdb.org/t/p/${size}${posterPath}`
 }
 ```
-  - { next: { revalidate: 3600 } } 는 Next.js의 캐싱 옵션입니다. 같은 요청을 1시간 동안 재사용합니다. 매번 TMDB에 요청하지 않아도 됩니다.
 
 ---
 
-### 통합 테스트 — TMDB 연결 확인
+## 6. 통합 테스트 — TMDB 연결 확인
 
-Header만 보이는 것은 step-00과 시각적으로 차이가 없습니다.
+Header만 보이는 것은 Step 0과 시각적으로 차이가 없습니다.
 `layout.tsx`, `Providers`, `movie.types.ts`, `tmdb.ts`가 실제로 연결되어 동작하는지 확인하려면
 `page.tsx`에서 직접 데이터를 가져와 화면에 출력해봅니다.
 
-`src/app/page.tsx`를 아래 코드로 교체합니다.
+**`src/app/page.tsx`를 아래 코드로 교체합니다.**
 
 ```tsx
 // src/app/page.tsx
@@ -383,13 +387,14 @@ export default async function HomePage() {
 `npm run dev` 후 `http://localhost:3000`에서 **한국어 영화 제목 목록**이 출력되면 아래 네 가지가 모두 정상입니다.
 
 | 확인 항목 | 근거 |
-| --- | --- |
+|---|---|
 | `tmdb.ts` 함수가 정상 동작 | 데이터가 화면에 출력됨 |
 | TMDB API 키가 올바르게 연결됨 | 인증 오류 없이 응답이 옴 |
 | `Movie` 타입이 올바름 | `movie.title` 접근 시 TypeScript 오류 없음 |
 | 서버 컴포넌트에서 직접 fetch 가능 | `async/await`가 `page.tsx`에서 동작함 |
 
 확인이 끝나면 `page.tsx`를 다시 비워둡니다. 홈 페이지는 다음 단계에서 제대로 만듭니다.
+
 ```tsx
 // src/app/page.tsx — 테스트 후 원래대로 되돌립니다
 export default function HomePage() {
@@ -399,12 +404,12 @@ export default function HomePage() {
 
 ---
 
-이 단계에서 만든 것
+## 이 단계에서 만든 것
 
 | 파일 | 역할 |
-| --- | --- |
+|---|---|
 | `src/app/layout.tsx` | 앱 공통 레이아웃 (서버 컴포넌트) |
 | `src/components/Providers.tsx` | QueryClientProvider (`'use client'`) |
 | `src/components/Header.tsx` | 네비게이션 (`'use client'`) |
-| `src/types/movie.types.ts` | Movie, Genre TypeScript 타입 |
-| `src/lib/tmdb.ts` | TMDB API 함수 모음 |
+| `src/types/movie.types.ts` | Movie, MovieDetail, Genre 타입 정의 |
+| `src/lib/tmdb.ts` | TMDB API 호출 함수 모음 |

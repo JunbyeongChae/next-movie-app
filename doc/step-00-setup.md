@@ -4,7 +4,7 @@
 
 ---
 
-## 이 단계에서 설정하는 것
+## 이 단계에서 만드는 것
 
 - Next.js 프로젝트를 생성하고 필요한 라이브러리를 설치합니다.
 - TMDB API 키를 발급받아 환경변수로 연결합니다.
@@ -130,20 +130,95 @@ NEXT_PUBLIC_SITE_URL=https://my-movie-app.com
 API 키처럼 외부에 노출되면 안 되는 값은 반드시 `NEXT_PUBLIC_` 없이 작성합니다.
 브라우저 개발자 도구에서도 값이 보이지 않습니다.
 
+### API 키 동작 확인
+
+`TMDB_API_KEY`는 서버에서만 읽을 수 있습니다. 브라우저 콘솔에서 직접 확인이 안 되므로, 임시 API Route를 만들어 테스트합니다.
+
+**`src/app/api/test/route.ts` 파일을 임시로 생성합니다.**
+
+```tsx
+// src/app/api/test/route.ts
+export async function GET() {
+  const apiKey = process.env.TMDB_API_KEY
+
+  if (!apiKey) {
+    return Response.json({ error: 'API 키가 설정되지 않았습니다.' }, { status: 500 })
+  }
+
+  const res = await fetch(
+    `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=ko-KR&page=1`
+  )
+  const data = await res.json()
+
+  return Response.json(data)
+}
+```
+
+`npm run dev` 실행 후 `http://localhost:3000/api/test` 에 접속합니다.
+
+| 결과 | 의미 |
+|---|---|
+| 영화 목록 JSON이 표시됨 | API 키 정상 |
+| `{ "error": "API 키가 설정되지 않았습니다." }` | `.env.local` 파일명 또는 키 이름 확인 |
+
+확인이 끝나면 `src/app/api/test/` 폴더를 삭제합니다.
+
 ---
 
-## 기술 스택 역할 비교
+## 5. 폴더 구조 생성
 
-`movie-app`과 비교하여 각 기술의 역할이 어떻게 변했는지 확인합니다.
+Shadcn UI를 설치하면 `src/components/`와 `src/lib/`가 자동으로 생성됩니다.
+나머지 폴더는 아래 명령으로 직접 만듭니다.
 
-| 기술 | movie-app | next-movie-app |
-|---|---|---|
-| **React Router** | 라우팅 전담 | 없음 (폴더가 라우터) |
-| **TanStack Query** | 모든 서버 데이터 fetch + 캐싱 | 클라이언트 상호작용이 있는 곳만 (검색 등) |
-| **Zustand** | 즐겨찾기 + 인증 상태 | 동일 (클라이언트 컴포넌트에서만 사용) |
-| **Zod + RHF** | 로그인 + 검색 폼 검증 | 동일 (클라이언트 컴포넌트) |
-| **TMDB API** | 없음 (json-server 사용) | 영화 데이터 소스 |
-| **서버 컴포넌트** | 없음 | 초기 데이터 fetch 담당 |
+```bash
+# 실행 위치: 프로젝트 루트 (next-movie-app/)
+mkdir src\store src\hooks src\types src\schemas
+```
 
-> TanStack Query의 역할이 줄어든 것처럼 보이지만, 검색 같은 사용자 상호작용이 있는 곳에서는 여전히 유용합니다.
-> 서버 컴포넌트로 초기 데이터를 가져오고, 이후 클라이언트에서 추가 요청이 필요할 때 TanStack Query를 활용합니다.
+> 이미 존재하는 폴더가 있어 오류 메시지가 출력되더라도 나머지 폴더는 정상 생성됩니다.
+
+최종 폴더 구조는 아래와 같습니다.
+
+```
+src/
+├── app/                 ← App Router — 폴더 구조 = URL 구조
+│   ├── layout.tsx       ← 전체 앱 공통 레이아웃
+│   ├── page.tsx         ← / 경로 (홈)
+│   ├── movies/
+│   │   └── [id]/
+│   │       └── page.tsx ← /movies/:id 경로 (상세)
+│   ├── favorites/
+│   │   └── page.tsx     ← /favorites 경로
+│   ├── search/
+│   │   └── page.tsx     ← /search 경로
+│   └── login/
+│       └── page.tsx     ← /login 경로
+├── components/          ← 재사용 공통 컴포넌트
+├── store/               ← Zustand store
+├── hooks/               ← TanStack Query 커스텀 훅
+├── lib/                 ← TMDB API 함수, 유틸리티
+├── schemas/             ← Zod 스키마
+└── types/               ← TypeScript 타입 정의
+```
+
+---
+
+## 6. 개발 서버 실행 확인
+
+```bash
+npm run dev
+```
+
+브라우저에서 `http://localhost:3000` 접속 시 화면이 정상 표시되면 설정 완료입니다. 종료는 `Ctrl + C`.
+
+---
+
+## 이 단계에서 만든 것
+
+| 항목 | 내용 |
+|---|---|
+| Next.js 프로젝트 생성 | TypeScript + Tailwind CSS + ESLint + App Router |
+| 추가 패키지 설치 | TanStack Query, Zustand, Zod + RHF |
+| Shadcn UI 설치 | Button, Input, Card, Skeleton, Badge |
+| TMDB API 키 | `.env.local`에 환경변수로 설정 |
+| 폴더 구조 | `store/`, `hooks/`, `types/`, `schemas/` |
