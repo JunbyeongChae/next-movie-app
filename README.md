@@ -25,6 +25,7 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 | Step 3 | GenreFilter 구현, `useState`로 클라이언트 UI 상태 관리, `Promise.all` 동시 요청 |
 | Step 4 | 동적 라우팅(`[id]`), `generateMetadata`로 동적 메타데이터, 상세 페이지 구현 |
 | Step 5 | Zustand store 구현, 즐겨찾기 추가·제거, 즐겨찾기 페이지 |
+| Step 6 | Zod + RHF 검색 폼, URL 파라미터 기반 검색, `useSearchParams` + `Suspense` |
 
 ---
 
@@ -87,8 +88,10 @@ src/
 │   │   └── [id]/
 │   │       ├── page.tsx      # 상세 페이지 + generateMetadata
 │   │       └── loading.tsx   # 상세 페이지 로딩 Skeleton
-│   └── favorites/
-│       └── page.tsx          # 즐겨찾기 페이지
+│   ├── favorites/
+│   │   └── page.tsx          # 즐겨찾기 페이지
+│   └── search/
+│       └── page.tsx          # 검색 결과 페이지
 ├── components/
 │   ├── Header.tsx        # 네비게이션 (클라이언트 컴포넌트)
 │   ├── Providers.tsx     # QueryClientProvider 래퍼 (클라이언트 컴포넌트)
@@ -97,6 +100,7 @@ src/
 │   ├── GenreFilter.tsx   # 장르 필터 UI + 선택 상태 관리 (클라이언트 컴포넌트)
 │   ├── FavoriteButton.tsx # 즐겨찾기 버튼 (클라이언트 컴포넌트)
 │   ├── FavoritesList.tsx  # 즐겨찾기 목록 (클라이언트 컴포넌트)
+│   ├── SearchForm.tsx     # 검색 폼 (클라이언트 컴포넌트)
 │   └── ui/               # shadcn/ui 컴포넌트
 │       ├── badge.tsx
 │       ├── button.tsx
@@ -106,6 +110,8 @@ src/
 ├── lib/
 │   ├── tmdb.ts           # TMDB API 호출 함수 모음
 │   └── utils.ts          # 유틸리티 함수 (cn 등)
+├── schemas/
+│   └── search.schema.ts  # 검색 폼 Zod 스키마
 ├── store/
 │   └── favoriteStore.ts  # 즐겨찾기 Zustand store
 └── types/

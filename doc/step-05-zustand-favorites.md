@@ -124,9 +124,12 @@ movies/[id]/page.tsx (서버 컴포넌트)
 
 > **상태 변경 흐름**: 즐겨찾기 추가 → Zustand store 업데이트 → 구독 중인 컴포넌트 리렌더링 → 화면 반영
 
+`persist` 미들웨어를 사용해 즐겨찾기 목록을 localStorage에 저장합니다. 페이지를 새로고침하거나 개발 서버의 HMR이 발생해도 즐겨찾기 목록이 유지됩니다.
+
 ```ts
 // src/store/favoriteStore.ts
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Movie } from '@/types/movie.types'
 
 interface FavoriteState {
@@ -136,25 +139,34 @@ interface FavoriteState {
   isFavorite: (movieId: number) => boolean
 }
 
-export const useFavoriteStore = create<FavoriteState>()((set, get) => ({
-  favorites: [],
+export const useFavoriteStore = create<FavoriteState>()(
+  persist(
+    (set, get) => ({
+      favorites: [],
 
-  // set: 상태를 변경하는 함수. 현재 state를 받아 새 state를 반환한다.
-  // [...state.favorites, movie] — 기존 배열을 복사하고 새 영화를 추가 (불변성 유지)
-  addFavorite: (movie) =>
-    set((state) => ({ favorites: [...state.favorites, movie] })),
+      // set: 상태를 변경하는 함수. 현재 state를 받아 새 state를 반환한다.
+      // [...state.favorites, movie] — 기존 배열을 복사하고 새 영화를 추가 (불변성 유지)
+      addFavorite: (movie) =>
+        set((state) => ({ favorites: [...state.favorites, movie] })),
 
-  // filter로 해당 id를 제외한 새 배열을 만들어 교체한다.
-  removeFavorite: (movieId) =>
-    set((state) => ({
-      favorites: state.favorites.filter((m) => m.id !== movieId),
-    })),
+      // filter로 해당 id를 제외한 새 배열을 만들어 교체한다.
+      removeFavorite: (movieId) =>
+        set((state) => ({
+          favorites: state.favorites.filter((m) => m.id !== movieId),
+        })),
 
-  // get: set 없이 현재 상태를 읽기만 할 때 사용한다.
-  // set을 쓰면 상태가 바뀌어 리렌더링이 발생하므로, 단순 조회는 get을 쓴다.
-  isFavorite: (movieId) =>
-    get().favorites.some((m) => m.id === movieId),
-}))
+      // get: set 없이 현재 상태를 읽기만 할 때 사용한다.
+      // set을 쓰면 상태가 바뀌어 리렌더링이 발생하므로, 단순 조회는 get을 쓴다.
+      isFavorite: (movieId) =>
+        get().favorites.some((m) => m.id === movieId),
+    }),
+    {
+      name: 'favorite-storage',                              // localStorage 키 이름
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ favorites: state.favorites }), // 저장할 상태만 선택
+    }
+  )
+)
 ```
 
 ---
@@ -331,3 +343,31 @@ npm run dev
 | `src/components/FavoritesList.tsx` | 즐겨찾기 목록 (`'use client'`) |
 | `src/app/favorites/page.tsx` | 즐겨찾기 페이지 |
 | `src/app/movies/[id]/page.tsx` | FavoriteButton 추가 |
+
+---
+
+## persist 미들웨어 — HMR 대응
+
+### 핵심 원인: HMR이 Zustand 모듈을 재평가
+
+`persist` 없는 Zustand store는 **브라우저 메모리(모듈 레벨 변수)** 에 상태를 저장합니다.
+
+Next.js 개발 서버는 파일을 저장할 때마다 **HMR(Hot Module Replacement)** 을 실행합니다. HMR이 발생하면 `favoriteStore.ts` 모듈이 재평가되어 store가 `favorites: []`로 초기화됩니다.
+
+```
+① 상세 페이지에서 ★ 클릭 → store: favorites: [movie] ✓
+② 개발 중 파일 저장 → HMR → store 초기화
+③ /favorites 이동 → store: favorites: [] → 빈 목록 표시 ✗
+```
+
+### 왜 persist가 해결책인가
+
+`persist`는 단순히 "새로고침 대응"이 아닙니다. localStorage에 즉시 저장하기 때문에 HMR로 모듈이 재초기화되더라도 store가 localStorage에서 상태를 복원합니다.
+
+```
+① 상세 페이지에서 ★ 클릭 → store: favorites: [movie] → localStorage에도 저장
+② HMR 발생 → 모듈 재평가 → store 초기화 → 즉시 localStorage에서 복원
+③ /favorites 이동 → store: favorites: [movie] → 목록 표시 ✓
+```
+
+> **`partialize`**: 저장할 상태만 선택합니다. `favorites` 배열만 localStorage에 저장하고, 함수(`addFavorite` 등)는 저장하지 않습니다. 함수는 JSON으로 직렬화할 수 없고, store 재생성 시 자동으로 다시 만들어집니다.
