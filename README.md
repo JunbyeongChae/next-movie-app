@@ -22,7 +22,7 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 | Step 0 | 프로젝트 생성, 패키지 설치, TMDB API 키 연결 |
 | Step 1 | layout.tsx · Providers · Header 구성, TypeScript 타입 정의, TMDB 유틸 함수 작성 |
 | Step 2 | MovieCard · MovieList 구현, loading.tsx Skeleton 처리, next.config.ts 이미지 호스트 설정 |
-| Step 3 | 클라이언트 컴포넌트로 검색 기능 구현 |
+| Step 3 | GenreFilter 구현, `useState`로 클라이언트 UI 상태 관리, `Promise.all` 동시 요청 |
 | Step 4 | Zustand로 즐겨찾기 상태 관리 |
 | Step 5 | 로그인 폼 (Zod + React Hook Form) |
 
@@ -87,7 +87,8 @@ src/
 │   ├── Header.tsx        # 네비게이션 (클라이언트 컴포넌트)
 │   ├── Providers.tsx     # QueryClientProvider 래퍼 (클라이언트 컴포넌트)
 │   ├── MovieCard.tsx     # 영화 카드 UI (서버 컴포넌트)
-│   ├── MovieList.tsx     # 카드 그리드 목록 (서버 컴포넌트)
+│   ├── MovieList.tsx     # 카드 그리드 목록
+│   ├── GenreFilter.tsx   # 장르 필터 UI + 선택 상태 관리 (클라이언트 컴포넌트)
 │   └── ui/               # shadcn/ui 컴포넌트
 │       ├── badge.tsx
 │       ├── button.tsx
