@@ -1,36 +1,138 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# next-movie-app
 
-## Getting Started
+Next.js App Router 기반의 영화 정보 앱입니다.
+기존 `movie-app`(React SPA)과 비교하며 Next.js의 핵심 개념을 학습합니다.
 
-First, run the development server:
+---
+
+## 학습 목표
+
+### 핵심 목표
+
+- **React SPA와 Next.js의 차이**를 코드 레벨에서 비교하며 이해한다
+- **서버 컴포넌트(Server Component)** 와 **클라이언트 컴포넌트(Client Component)** 를 상황에 맞게 구분하여 사용한다
+- **파일 기반 라우팅(File-based Routing)** 구조를 이해하고 페이지를 구성한다
+- **TMDB API** 를 서버에서 직접 호출하여 초기 데이터를 렌더링한다
+- 기존에 학습한 상태 관리 원칙(TanStack Query, Zustand)을 Next.js 환경에 맞게 적용한다
+
+### 단계별 목표
+
+| 단계 | 목표 |
+|------|------|
+| Step 0 | 프로젝트 생성, 패키지 설치, TMDB API 키 연결 |
+| Step 1 | 폴더 구조 이해 및 기본 레이아웃 구성 |
+| Step 2 | 서버 컴포넌트로 영화 목록 데이터 fetch |
+| Step 3 | 클라이언트 컴포넌트로 검색 기능 구현 |
+| Step 4 | Zustand로 즐겨찾기 상태 관리 |
+| Step 5 | 로그인 폼 (Zod + React Hook Form) |
+
+---
+
+## 기술 스택
+
+| 기술 | 역할 |
+|------|------|
+| **Next.js (App Router)** | 프레임워크, 파일 기반 라우팅, 서버 컴포넌트 |
+| **TypeScript** | 정적 타입 |
+| **Tailwind CSS** | 스타일링 |
+| **shadcn/ui** | UI 컴포넌트 (button, input, card, skeleton, badge) |
+| **TanStack Query** | 클라이언트 상호작용이 있는 곳의 서버 상태 관리 (검색 등) |
+| **Zustand** | 클라이언트 전역 상태 관리 (즐겨찾기, 인증) |
+| **Zod + React Hook Form** | 폼 유효성 검사 |
+| **TMDB API** | 영화 데이터 소스 |
+
+---
+
+## movie-app과의 기술 스택 비교
+
+`movie-app`(React SPA)에서 각 기술이 담당하던 역할이 Next.js에서 어떻게 변했는지 비교합니다.
+
+| 기술 | movie-app에서 | next-movie-app에서 |
+|------|--------------|-------------------|
+| **React Router** | 라우팅 전담 | **없음** (폴더 구조가 라우터) |
+| **TanStack Query** | 모든 서버 데이터 fetch + 캐싱 | 클라이언트 상호작용이 있는 곳만 (검색 등) |
+| **Zustand** | 즐겨찾기 + 인증 상태 | 동일 (클라이언트 컴포넌트에서만 사용) |
+| **Zod + RHF** | 로그인 + 검색 폼 검증 | 동일 (클라이언트 컴포넌트) |
+| **TMDB API** | 없음 (json-server 사용) | 영화 데이터 소스 |
+| **서버 컴포넌트** | 없음 | 초기 데이터 fetch 담당 |
+
+> TanStack Query의 역할이 줄어든 것처럼 보이지만, 검색처럼 사용자 상호작용이 있는 곳에서는 여전히 유용합니다.
+> 서버 컴포넌트로 초기 데이터를 가져오고, 이후 클라이언트에서 추가 요청이 필요할 때 TanStack Query를 사용합니다.
+
+---
+
+## 상태 관리 분류
+
+`movie-app`에서 배웠던 상태 분류 원칙이 `next-movie-app`에서도 동일하게 적용됩니다.
+
+| 상태 종류 | 도구 | 예시 |
+|-----------|------|------|
+| **서버 상태** (초기 렌더링) | 서버 컴포넌트 | 영화 목록, 영화 상세 |
+| **서버 상태** (클라이언트 상호작용) | TanStack Query | 검색 결과 |
+| **클라이언트 전역 상태** | Zustand | 즐겨찾기, 로그인 여부 |
+| **폼 상태** | React Hook Form + Zod | 로그인 폼 입력값 |
+
+---
+
+## 프로젝트 구조
+
+```
+src/
+├── app/                  # Next.js App Router (파일 = 라우트)
+│   ├── layout.tsx        # 공통 레이아웃
+│   ├── page.tsx          # 홈 페이지 (/)
+│   └── globals.css
+├── components/
+│   └── ui/               # shadcn/ui 컴포넌트
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── input.tsx
+│       └── skeleton.tsx
+└── lib/
+    └── utils.ts          # 유틸리티 함수 (cn 등)
+```
+
+---
+
+## 시작하기
+
+### 환경 설정
+
+1. 패키지 설치
+
+```bash
+npm install
+```
+
+2. 환경변수 파일 생성
+
+```bash
+cp .env.example .env.local
+```
+
+3. `.env.local` 파일에 TMDB API 키 입력
+
+```bash
+TMDB_API_KEY=여기에_발급받은_API_키_입력
+```
+
+> TMDB API 키 발급: [themoviedb.org](https://www.themoviedb.org/) → 프로필 → 설정 → API
+
+### 개발 서버 실행
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) 에서 확인합니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 참고 링크
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js 공식 문서](https://nextjs.org/docs)
+- [TMDB API 문서](https://developer.themoviedb.org/docs)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [TanStack Query](https://tanstack.com/query/latest)
+- [Zustand](https://zustand-demo.pmnd.rs/)
