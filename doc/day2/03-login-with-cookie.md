@@ -120,6 +120,34 @@ export default function LoginPage() {
 
 ```ts
 // src/actions/auth.ts
+
+// 💡 [아주 쉬운 Server Action 설명]
+// 브라우저(프론트엔드)에서 이 함수들을 호출해도, 실제로는 '서버(백엔드)'에서만 실행됩니다!
+// 별도의 백엔드 API 주소를 만들 필요 없이, 프론트엔드 코드처럼 편하게 서버 기능(DB, 쿠키 등)을 
+// 사용할 수 있는 마법 같은 기능입니다.
+
+// 📌 [작동 예시]
+// export async function changeName(formData: FormData) {
+//   "use server";
+//   const newName = formData.get("name");
+//   // 브라우저에서는 쓸 수 없는 DB 직접 접근 코드를 여기서 바로 사용합니다!
+//   await prisma.user.update({
+//     where: { id: 1 },   // 조건: id가 1인 사용자를 찾아라
+//                         //   → SQL의 WHERE id = 1 과 같음
+//     data: { name: newName }, // 변경할 내용: name 컬럼을 newName 값으로 바꿔라
+//                              //   → SQL의 SET name = newName 과 같음
+//   });
+//   // 전체를 SQL로 표현하면:
+//   // UPDATE users SET name = newName WHERE id = 1;
+// }
+
+// 📌"use server" 지시어는 이 파일에 정의된 함수들이 'Server Action'임을 선언합니다.
+// [역할] 클라이언트(브라우저)에서 호출하더라도 실제 코드는 오직 서버에서만 안전하게 실행됩니다. 
+//        이로 인해 별도의 API 라우트(/api/...)를 만들지 않고도 프론트엔드에서 서버 
+//        로직(DB 접근, 쿠키 설정, 민감한 키 사용 등)을 직접 다룰 수 있습니다.
+// [사용] 주로 클라이언트 컴포넌트의 <form action={...}> 속성에 직접 연결되거나, 
+//       useActionState 훅에 전달되어 폼 제출 이벤트를 처리하는 데 사용됩니다.
+
 "use server";
 
 import { cookies } from "next/headers";
