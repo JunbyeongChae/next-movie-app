@@ -27,6 +27,7 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 | Step 5 | Zustand store 구현, 즐겨찾기 추가·제거, 즐겨찾기 페이지 |
 | Step 6 | Zod + RHF 검색 폼, URL 파라미터 기반 검색, `useSearchParams` + `Suspense` |
 | Step A | 타입 배럴 파일(`index.ts`) 도입, 환경별 logger 유틸리티 구현 |
+| Step B | `useEffect` cleanup 패턴, `beforeunload` 이탈 방지 구현 |
 
 ---
 
