@@ -29,6 +29,7 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 | Step 01 | 타입 배럴 파일(`index.ts`) 도입, 환경별 logger 유틸리티 구현 |
 | Step 02 | `useEffect` cleanup 패턴, `beforeunload` 이탈 방지 구현 |
 | Step 03 | Server Action + 쿠키 기반 로그인/로그아웃, Header 서버 컴포넌트 전환 |
+| Step 04 | NextAuth Credentials 로그인, `signIn` / `useSession` / `auth()`, SessionProvider 추가 |
 
 ---
 
@@ -85,7 +86,11 @@ src/
 ├── actions/
 │   └── auth.ts           # login / logout Server Action
 ├── app/                  # Next.js App Router (파일 = 라우트)
-│   ├── layout.tsx        # 공통 레이아웃 (서버 컴포넌트)
+│   ├── layout.tsx        # 공통 레이아웃 (서버 컴포넌트, SessionProvider 포함)
+│   ├── api/
+│   │   └── auth/
+│   │       └── [...nextauth]/
+│   │           └── route.ts  # NextAuth API 핸들러 (GET/POST)
 │   ├── page.tsx          # 홈 페이지 (/)
 │   ├── loading.tsx       # 홈 로딩 Skeleton
 │   ├── globals.css
@@ -101,7 +106,7 @@ src/
 │       └── page.tsx          # 검색 결과 페이지
 ├── components/
 │   ├── Header.tsx        # 네비게이션 (클라이언트 컴포넌트)
-│   ├── Providers.tsx     # QueryClientProvider 래퍼 (클라이언트 컴포넌트)
+│   ├── Providers.tsx     # QueryClientProvider 래퍼 (Step 04에서 SessionProvider로 대체, 현재 미사용)
 │   ├── MovieCard.tsx     # 영화 카드 UI (서버 컴포넌트)
 │   ├── MovieList.tsx     # 카드 그리드 목록
 │   ├── GenreFilter.tsx   # 장르 필터 UI + 선택 상태 관리 (클라이언트 컴포넌트)
@@ -116,6 +121,7 @@ src/
 │       ├── input.tsx
 │       └── skeleton.tsx
 ├── lib/
+│   ├── auth.ts           # NextAuth 설정 (Credentials 프로바이더, handlers, auth, signIn, signOut)
 │   ├── tmdb.ts           # TMDB API 호출 함수 모음
 │   ├── logger.ts         # 환경별 로거 (개발: console, 프로덕션: noop)
 │   └── utils.ts          # 유틸리티 함수 (cn 등)

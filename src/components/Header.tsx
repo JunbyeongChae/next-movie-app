@@ -1,11 +1,10 @@
-import { cookies } from 'next/headers';
-import { logout } from '@/actions/auth';
+'use client';
+
+import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 
-export default async function Header() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('session');
-  const isLoggedIn = !!session;
+export default function Header() {
+  const { data: session } = useSession();
 
   return (
     <header className="border-b px-6 py-4 flex items-center justify-between">
@@ -13,14 +12,12 @@ export default async function Header() {
         🎬 Movie App
       </Link>
       <div>
-        {isLoggedIn ? (
+        {session ? (
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{session.value}</span>
-            <form action={logout}>
-              <button type="submit" className="text-sm text-red-500 hover:underline">
-                로그아웃
-              </button>
-            </form>
+            <span className="text-sm text-muted-foreground">{session.user?.email}</span>
+            <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-sm text-red-500 hover:underline">
+              로그아웃
+            </button>
           </div>
         ) : (
           <Link href="/login" className="text-sm hover:underline">
