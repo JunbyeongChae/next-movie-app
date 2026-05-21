@@ -26,8 +26,9 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 | Step 4 | 동적 라우팅(`[id]`), `generateMetadata`로 동적 메타데이터, 상세 페이지 구현 |
 | Step 5 | Zustand store 구현, 즐겨찾기 추가·제거, 즐겨찾기 페이지 |
 | Step 6 | Zod + RHF 검색 폼, URL 파라미터 기반 검색, `useSearchParams` + `Suspense` |
-| Step A | 타입 배럴 파일(`index.ts`) 도입, 환경별 logger 유틸리티 구현 |
-| Step B | `useEffect` cleanup 패턴, `beforeunload` 이탈 방지 구현 |
+| Step 01 | 타입 배럴 파일(`index.ts`) 도입, 환경별 logger 유틸리티 구현 |
+| Step 02 | `useEffect` cleanup 패턴, `beforeunload` 이탈 방지 구현 |
+| Step 03 | Server Action + 쿠키 기반 로그인/로그아웃, Header 서버 컴포넌트 전환 |
 
 ---
 
@@ -81,11 +82,15 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 
 ```
 src/
+├── actions/
+│   └── auth.ts           # login / logout Server Action
 ├── app/                  # Next.js App Router (파일 = 라우트)
 │   ├── layout.tsx        # 공통 레이아웃 (서버 컴포넌트)
 │   ├── page.tsx          # 홈 페이지 (/)
 │   ├── loading.tsx       # 홈 로딩 Skeleton
 │   ├── globals.css
+│   ├── login/
+│   │   └── page.tsx          # 로그인 페이지
 │   ├── movies/
 │   │   └── [id]/
 │   │       ├── page.tsx      # 상세 페이지 + generateMetadata
@@ -102,6 +107,7 @@ src/
 │   ├── GenreFilter.tsx   # 장르 필터 UI + 선택 상태 관리 (클라이언트 컴포넌트)
 │   ├── FavoriteButton.tsx # 즐겨찾기 버튼 (클라이언트 컴포넌트)
 │   ├── FavoritesList.tsx  # 즐겨찾기 목록 (클라이언트 컴포넌트)
+│   ├── LoginForm.tsx      # 로그인 폼 (클라이언트 컴포넌트)
 │   ├── SearchForm.tsx     # 검색 폼 (클라이언트 컴포넌트)
 │   └── ui/               # shadcn/ui 컴포넌트
 │       ├── badge.tsx

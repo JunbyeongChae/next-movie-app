@@ -1,29 +1,33 @@
-'use client';
-
+import { cookies } from 'next/headers';
+import { logout } from '@/actions/auth';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
-const navLinks = [
-  { href: '/', label: '홈' },
-  { href: '/search', label: '검색' },
-  { href: '/favorites', label: '즐겨찾기' }
-];
-
-export default function Header() {
-  const pathname = usePathname();
+export default async function Header() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get('session');
+  const isLoggedIn = !!session;
 
   return (
-    <header className="border-b px-6 py-4 flex items-center gap-6">
+    <header className="border-b px-6 py-4 flex items-center justify-between">
       <Link href="/" className="font-bold text-lg">
-        🎬 MovieApp
+        🎬 Movie App
       </Link>
-      <nav className="flex gap-4">
-        {navLinks.map((link) => (
-          <Link key={link.href} href={link.href} className={pathname === link.href ? 'font-bold underline' : 'text-gray-500'}>
-            {link.label}
+      <div>
+        {isLoggedIn ? (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{session.value}</span>
+            <form action={logout}>
+              <button type="submit" className="text-sm text-red-500 hover:underline">
+                로그아웃
+              </button>
+            </form>
+          </div>
+        ) : (
+          <Link href="/login" className="text-sm hover:underline">
+            로그인
           </Link>
-        ))}
-      </nav>
+        )}
+      </div>
     </header>
   );
 }
