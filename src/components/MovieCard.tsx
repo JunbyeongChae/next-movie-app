@@ -2,7 +2,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { getPosterUrl } from '@/lib/tmdb';
-import type { Movie } from '@/types/movie.types';
+//수정 전
+//import type { Movie } from '@/types/movie.types';
+// 수정 후
+import type { Movie } from '@/types';
 
 interface MovieCardProps {
   movie: Movie;

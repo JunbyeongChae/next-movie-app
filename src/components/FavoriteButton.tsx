@@ -2,7 +2,11 @@
 
 import { useFavoriteStore } from '@/store/favoriteStore';
 import { Button } from '@/components/ui/button';
-import type { Movie } from '@/types/movie.types';
+// 수정 전
+//import type { Movie } from "@/types/movie.types";
+
+// 수정 후
+import type { Movie } from '@/types';
 
 interface FavoriteButtonProps {
   movie: Movie;

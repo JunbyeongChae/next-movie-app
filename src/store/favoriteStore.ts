@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Movie } from '@/types/movie.types';
+// 수정 전
+//import type { Movie } from "@/types/movie.types";
+
+// 수정 후
+import type { Movie } from '@/types';
 
 interface FavoriteState {
   favorites: Movie[];

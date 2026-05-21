@@ -1,4 +1,5 @@
-import { Movie, MovieDetail, Genre } from '../types/movie.types';
+import { Movie, MovieDetail, Genre } from '@/types';
+import { logger } from '@/lib/logger';
 
 const BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -43,8 +44,18 @@ async function tmdbFetch<T>(endpoint: string, params = ''): Promise<T> {
     `${BASE_URL}${endpoint}?api_key=${API_KEY}&language=ko-KR${params}`,
     { next: { revalidate: 3600 } } // 1시간마다 데이터 갱신
   );
+  /* 
+  수정 전 (파일 끝부분)
   if (!res.ok) throw new Error(`TMDB 요청 실패:${endpoint}`);
-  return res.json();
+  console.log('[tmdb] 응답:', endpoint, data);
+  return res.json(); 
+  */
+
+  // 수정 후
+  if (!res.ok) throw new Error(`TMDB 요청 실패:${endpoint}`);
+  const data = await res.json();
+  logger.log('[tmdb] 응답:', endpoint, data);
+  return data;
 }
 
 // 인기 영화 목록을 가져옵니다. 홈 페이지에서 사용합니다.

@@ -2,8 +2,12 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import type { Genre, Movie } from '@/types/movie.types';
 import MovieList from './MovieList';
+// 수정 전
+//import type { Genre, Movie } from "@/types/movie.types";
+
+// 수정 후
+import type { Genre, Movie } from '@/types';
 
 interface GenreFilterProps {
   genres: Genre[];

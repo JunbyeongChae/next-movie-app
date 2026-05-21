@@ -26,6 +26,7 @@ Next.js App Router 기반의 영화 정보 앱입니다.
 | Step 4 | 동적 라우팅(`[id]`), `generateMetadata`로 동적 메타데이터, 상세 페이지 구현 |
 | Step 5 | Zustand store 구현, 즐겨찾기 추가·제거, 즐겨찾기 페이지 |
 | Step 6 | Zod + RHF 검색 폼, URL 파라미터 기반 검색, `useSearchParams` + `Suspense` |
+| Step A | 타입 배럴 파일(`index.ts`) 도입, 환경별 logger 유틸리티 구현 |
 
 ---
 
@@ -109,13 +110,16 @@ src/
 │       └── skeleton.tsx
 ├── lib/
 │   ├── tmdb.ts           # TMDB API 호출 함수 모음
+│   ├── logger.ts         # 환경별 로거 (개발: console, 프로덕션: noop)
 │   └── utils.ts          # 유틸리티 함수 (cn 등)
 ├── schemas/
 │   └── search.schema.ts  # 검색 폼 Zod 스키마
 ├── store/
 │   └── favoriteStore.ts  # 즐겨찾기 Zustand store
 └── types/
-    └── movie.types.ts    # Movie, MovieDetail, Genre 타입 정의
+    ├── movie.types.ts    # Movie, MovieDetail, Genre 타입 정의
+    ├── user.types.ts     # User, AuthState 타입 정의
+    └── index.ts          # 배럴 파일 (타입 re-export 중앙 진입점)
 ```
 
 ---

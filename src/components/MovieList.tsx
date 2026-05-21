@@ -1,5 +1,9 @@
 import MovieCard from './MovieCard';
-import type { Movie } from '@/types/movie.types';
+// 수정 전
+//import type { Movie } from "@/types/movie.types";
+
+// 수정 후
+import type { Movie } from '@/types';
 
 interface MovieListProps {
   movies: Movie[];
