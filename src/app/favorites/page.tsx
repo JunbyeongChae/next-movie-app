@@ -1,5 +1,5 @@
 // src/app/favorites/page.tsx
-import FavoritesList from '@/components/FavoritesList'
+import FavoritesList from '@/components/FavoritesList';
 
 export default function FavoritesPage() {
   return (
@@ -7,5 +7,5 @@ export default function FavoritesPage() {
       <h1 className="text-2xl font-bold">즐겨찾기</h1>
       <FavoritesList />
     </div>
-  )
+  );
 }

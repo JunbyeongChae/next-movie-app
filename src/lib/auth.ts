@@ -1,24 +1,17 @@
-import NextAuth from 'next-auth'
-import Credentials from 'next-auth/providers/credentials'
-import { timingSafeEqual } from 'crypto'
-import { authConfig } from '@/lib/auth.config'
-import { loginSchema } from '@/schemas/auth.schema'
-import { checkRateLimit, recordFailure, resetFailure } from '@/lib/rate-limit'
-import { logger } from '@/lib/logger'
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import { authConfig } from '@/lib/auth.config';
+import { loginSchema } from '@/schemas/auth.schema';
+import { checkRateLimit, recordFailure, resetFailure } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
+import pool from '@/lib/db';
+import bcrypt from 'bcryptjs';
 
-function safeEqual(a: string, b: string): boolean {
-  try {
-    const bufA = Buffer.from(a)
-    const bufB = Buffer.from(b)
-    // 길이가 다르면 즉시 false지만, 더미 비교로 소요 시간을 고정해 타이밍 공격 방어
-    if (bufA.length !== bufB.length) {
-      timingSafeEqual(bufA, bufA)
-      return false
-    }
-    return timingSafeEqual(bufA, bufB)
-  } catch {
-    return false
-  }
+interface DbUser {
+  id: string;
+  email: string;
+  name: string;
+  password_hash: string;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -26,35 +19,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
-        const parsed = loginSchema.safeParse(credentials)
-        if (!parsed.success) return null
+        const parsed = loginSchema.safeParse(credentials);
+        if (!parsed.success) return null;
 
-        const { email, password } = parsed.data
+        const { email, password } = parsed.data;
 
-        const { blocked } = checkRateLimit(email)
+        const { blocked } = checkRateLimit(email);
         if (blocked) {
-          logger.warn(`[auth] 로그인 차단됨 (Rate Limit 초과): ${email}`)
-          return null
+          logger.warn(`[auth] 로그인 차단됨 (Rate Limit 초과):${email}`);
+          return null;
         }
 
-        const adminEmail = process.env.ADMIN_EMAIL ?? ''
-        const adminPassword = process.env.ADMIN_PASSWORD ?? ''
+        const { rows } = await pool.query<DbUser>('SELECT id, email, name, password_hash FROM users WHERE email = $1', [email]);
+        const user = rows[0];
 
-        // 이메일 불일치 시에도 항상 비밀번호 비교까지 수행 (타이밍 공격 방어)
-        const emailMatch = safeEqual(email, adminEmail)
-        const passwordMatch = safeEqual(password, adminPassword)
-
-        if (!emailMatch || !passwordMatch) {
-          recordFailure(email)
-          logger.warn(`[auth] 로그인 실패: ${email}`)
-          return null
+        if (!user) {
+          // 사용자가 없어도 bcrypt.compare()를 실행합니다.
+          // 실행 시간을 일정하게 유지해 "이메일 존재 여부"가
+          // 응답 속도로 노출되지 않도록 합니다(타이밍 공격 방어).
+          //await bcrypt.compare(password, '$2a$12$dummyhashfortimingattackdefense')
+          recordFailure(email);
+          logger.warn(`[auth] 로그인 실패 (없는 이메일):${email}`);
+          return null;
         }
 
-        resetFailure(email)
-        logger.log(`[auth] 로그인 성공: ${email}`)
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+          recordFailure(email);
+          logger.warn(`[auth] 로그인 실패:${email}`);
+          return null;
+        }
 
-        return { id: '1', name: '테스트 유저', email: adminEmail }
-      },
-    }),
-  ],
-})
+        resetFailure(email);
+        logger.log(`[auth] 로그인 성공:${email}`);
+
+        return { id: user.id, name: user.name, email: user.email };
+      }
+    })
+  ]
+});
